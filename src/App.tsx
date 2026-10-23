@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, Component, ReactNode } from 'react';
 import { Activity, ArrowRight, BookOpen, Check, CheckCircle2, ChevronRight, Circle, Flame, Headphones, Lightbulb, LogIn, LogOut, Mic, Plus, RotateCcw, Sparkles, Target, Trophy, Volume2, Square, UserRound, LoaderCircle, Waves, MessageSquareText, Bell, Cloud, BookMarked, MessagesSquare, Send, RefreshCw } from 'lucide-react';
 import { api, auth } from './lib/api';
 
@@ -23,6 +23,23 @@ const challenges=[
 ];
 const today=()=>new Date().toLocaleDateString('en-CA');
 const load=(key,fallback)=>{try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback}catch{return fallback}};
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 40, textAlign: 'center', fontFamily: 'sans-serif' }}>
+          <h2>ClearVoice encountered an error</h2>
+          <p>Please refresh the page. If the issue persists, check your internet connection and try again.</p>
+          <button onClick={() => window.location.reload()} style={{ padding: 10 20, cursor: 'pointer' }}>Refresh</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function App(){
  const [page,setPage]=useState('Today'),[words,setWords]=useState(()=>load('clearvoice-custom-words',[])),[done,setDone]=useState(()=>load('clearvoice-tasks-'+today(),[])),[practiced,setPracticed]=useState(()=>load('clearvoice-practiced-'+today(),[])),[challengeDone,setChallengeDone]=useState(()=>load('clearvoice-challenges',[]));
@@ -65,7 +82,9 @@ function App(){
  const sendSimMessage=async()=>{const message=simInput.trim();if(!message||simBusy)return;if(!user){notify('Sign in to start an AI conversation.');return}const prior=simMessages.slice(-10);setSimMessages(v=>[...v,{role:'user',text:message,at:new Date().toISOString()}]);setSimInput('');setSimBusy(true);setSimError('');try{const r=await api.post('/api/simulator',{scenario,messages:prior.map(m=>({role:m.role,text:m.text})),message});if(typeof r.data.reply!=='string'||!r.data.reply.trim())throw new Error('No reply');setSimMessages(v=>[...v,{role:'assistant',text:r.data.reply,at:new Date().toISOString()}].slice(-20));markActive()}catch{setSimError('The conversation partner is unavailable right now. Your last message is kept; try sending it again when ready.');setSimInput(message)}finally{setSimBusy(false)}};
  const resetSimulator=()=>{if(window.confirm('Start a fresh roleplay? This clears the current conversation from this browser.')){setSimMessages([]);setSimError('');setSimInput('')}};
 
- return <div className="app-shell">
+ return (
+    <ErrorBoundary>
+      <div className="app-shell">
  <aside className="sidebar"><div className="brand"><div className="brand-mark"><Mic size={21}/></div><div><strong>clearvoice</strong><span>YOUR SPEAKING SPACE</span></div></div><div className="nav-label">YOUR WORKSPACE</div><nav>{[['Today',Activity],['Word practice',BookOpen],['Voice studio',Mic],['Learning plan',BookMarked],['Conversation simulator',MessagesSquare],['Challenges',Target],['My progress',Trophy],['Daily tasks',CheckCircle2]].map(([label,Icon])=><button key={label} className={'nav-item '+(page===label?'active':'')} onClick={()=>setPage(label)}><Icon size={18}/><span>{label}</span>{page===label&&<ChevronRight size={16} className="nav-arrow"/>}</button>)}</nav><div className="sidebar-bottom"><div className="mini-quote"><Sparkles size={17}/><p>“Your voice matters. Give it room to grow.”</p><span>YOUR DAILY REMINDER</span></div><div className="profile"><div className="avatar">{user?.name?.[0]?.toUpperCase()||'Y'}</div><div><strong>{user?.name||'Your practice'}</strong><span>{user?.email||'One day at a time'}</span></div></div></div></aside>
  <main className="main-area"><header className="topbar"><div className="mobile-brand"><div className="brand-mark"><Mic size={18}/></div><strong>clearvoice</strong></div><div className="breadcrumb">Speaking studio <span>/</span> <b>{page}</b></div><div className="top-actions"><span className="sync-indicator"><span className={'sync-dot '+(sync==='Cloud synced'?'online':'')}/>{sync}</span>{user?<button className="top-action" onClick={signOut} title="Sign out"><LogOut size={16}/></button>:<button className="top-action" onClick={signIn} disabled={busy} title="Sign in"><UserRound size={16}/></button>}<span className="top-date">{new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span></div></header>
  <div className="content">
@@ -79,5 +98,7 @@ function App(){
  {page==='Challenge detail'&&<><button className="text-link back-link" onClick={()=>setPage('Challenges')}>← Back to challenges</button><section className="page-intro"><div className="eyebrow"><span className="eyebrow-line"/> GUIDED SPEAKING CHALLENGE</div><h1>{challenges[challengeIndex].title}<em>.</em></h1><p className="subhead">{challenges[challengeIndex].time} · Give yourself permission to practise.</p></section><div className="panel challenge-detail"><div className="challenge-detail-icon"><Mic size={25}/></div><div className="section-kicker">{challenges[challengeIndex].week}</div><h2>Your prompt</h2><p>{challenges[challengeIndex].prompt}</p><div className="challenge-tip"><Lightbulb size={18}/><span>{challenges[challengeIndex].tip}</span></div><ol><li>Take one slow breath before you begin.</li><li>Say your main idea in a complete sentence.</li><li>Pause between thoughts instead of rushing.</li><li>Finish with a clear final sentence.</li></ol><button className="primary-btn" onClick={()=>{setPage('Voice studio');setTranscript(challenges[challengeIndex].prompt)}}><Mic size={16}/> Practise in voice studio</button><button className={challengeDone.includes(challenges[challengeIndex].id)?'completed-btn':'outline-btn'} onClick={()=>toggleChallenge(challenges[challengeIndex].id)}>{challengeDone.includes(challenges[challengeIndex].id)?'Mark as not done':'Mark challenge complete'}</button></div></>}
  {page==='My progress'&&<><section className="page-intro"><div className="eyebrow"><span className="eyebrow-line"/> EVERY REPETITION COUNTS</div><h1>Your voice is <em>growing.</em></h1><p className="subhead">Celebrate the work you put in, not just the words you get right.</p></section><section className="progress-overview"><div className="panel progress-big"><div className="section-kicker">TODAY'S COMPLETION</div><div className="ring-wrap"><svg viewBox="0 0 140 140" className="progress-ring"><circle cx="70" cy="70" r="58" className="ring-bg"/><circle cx="70" cy="70" r="58" className="ring-fill" strokeDasharray={364.4} strokeDashoffset={364.4*(1-pct/100)}/></svg><div className="ring-center"><strong>{pct}%</strong><span>complete</span></div></div><h3>{pct===100?'You showed up for yourself!':'Keep your momentum'}</h3><p>Every exercise is an investment in your communication skills.</p></div><div className="progress-side"><div className="panel progress-metric"><span className="stat-icon peach"><BookOpen size={20}/></span><div><span className="stat-label">WORDS PRACTISED TODAY</span><strong>{practiced.length}</strong><small>Every repetition counts.</small></div></div><div className="panel progress-metric"><span className="stat-icon lilac"><CheckCircle2 size={20}/></span><div><span className="stat-label">TASKS COMPLETED</span><strong>{done.length} <small>/ {tasks.length}</small></strong><small>{tasks.length-done.length} left today.</small></div></div><div className="panel progress-metric"><span className="stat-icon mint"><Flame size={20}/></span><div><span className="stat-label">PRACTICE STREAK</span><strong>{streak} days</strong><small>One day at a time.</small></div></div><div className="panel progress-metric"><span className="stat-icon lilac"><Trophy size={20}/></span><div><span className="stat-label">CHALLENGES COMPLETED</span><strong>{challengeDone.length} <small>/ {challenges.length}</small></strong><small>Every brave attempt counts.</small></div></div></div></section><section className="panel settings-strip"><div className="settings-icon"><Cloud size={19}/></div><div className="settings-copy"><strong>{user?'Sync your progress':'Save progress across devices'}</strong><span>{user?'Save your practice to your account.':'Sign in to sync words, tasks, and challenges.'}</span></div><button className="outline-btn" disabled={busy} onClick={()=>user?syncProgress(user):signIn()}>{busy?<LoaderCircle className="spin" size={15}/>:user?<Cloud size={16}/>:<LogIn size={16}/>} {user?'Sync now':'Sign in'}</button></section><div className="reset-row"><span>Want a fresh start on today's practice?</span><button onClick={()=>{if(window.confirm('Reset today’s tasks and words practiced?')){setDone([]);setPracticed([])}}}><RotateCcw size={14}/> Reset today's progress</button></div></>}
  </div><footer className="footer"><span>clearvoice <span className="footer-dot">·</span> Find your voice, one day at a time.</span><span>Made for your growth <Sparkles size={13}/></span></footer></main>{toast&&<div className="toast"><CheckCircle2 size={17}/>{toast}</div>}</div>
+    </ErrorBoundary>
+  );
 }
 export default App;
