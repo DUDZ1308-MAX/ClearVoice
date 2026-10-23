@@ -1,0 +1,130 @@
+[
+  {
+    "name": "Record a speaking sample and request AI feedback",
+    "sanity": true,
+    "viewport": "desktop",
+    "covers": [
+      "microphone recording and playback",
+      "AI speaking feedback endpoint",
+      "structured strengths, improvement, drill, and rewrite feedback",
+      "local coaching history and replay",
+      "copy feedback action",
+      "visible feedback or recoverable error"
+    ],
+    "description": "Verifies a learner can record or provide a transcript and see useful coaching feedback or a clear retryable error.",
+    "steps": [
+      "Open Voice studio",
+      "Record a short sample or enter a transcript",
+      "Request AI speaking feedback"
+    ],
+    "expected": "Feedback with strengths, one improvement, and a next exercise appears, or a clear retryable error is shown."
+  },
+  {
+    "name": "Generate a personalized seven-day speaking plan",
+    "viewport": "desktop",
+    "covers": [
+      "learning plan preferences",
+      "POST /api/learning-plan authenticated AI endpoint",
+      "personalized seven-day practice plan",
+      "local plan persistence and refresh"
+    ],
+    "description": "Verifies a learner can choose a goal, confidence level, and daily time budget, generate a plan, and revisit it.",
+    "steps": [
+      "Sign in",
+      "Open Learning plan",
+      "Choose a goal, level, and daily time",
+      "Create the seven-day plan",
+      "Refresh the page"
+    ],
+    "expected": "A seven-day plan with day-by-day drills and reflections is shown and remains saved in the browser."
+  },
+  {
+    "name": "Practise an interactive real-life conversation",
+    "viewport": "desktop",
+    "covers": [
+      "conversation scenario selection",
+      "POST /api/simulator authenticated AI roleplay endpoint",
+      "multi-turn conversation context",
+      "conversation history persistence",
+      "reset conversation with confirmation"
+    ],
+    "description": "Verifies the learner can select a scenario, send a response, receive a contextual follow-up, and reset intentionally.",
+    "steps": [
+      "Sign in",
+      "Open Conversation simulator",
+      "Select Job interview",
+      "Send a short answer",
+      "Read the AI partner reply",
+      "Reset the conversation and confirm"
+    ],
+    "expected": "A contextual roleplay reply appears, conversation turns persist locally, and confirmed reset clears the chat."
+  },
+  {
+    "name": "Sign in and sync private progress",
+    "viewport": "desktop",
+    "covers": [
+      "authentication",
+      "user-scoped cloud profile read and write",
+      "cloud sync status",
+      "progress persistence",
+      "private coaching history backup and restore"
+    ],
+    "description": "Verifies an authenticated user can save practice progress to their own account and load it again.",
+    "steps": [
+      "Sign in using the account dialog",
+      "Complete a daily task and add a custom word",
+      "Choose Sync now and reload the app"
+    ],
+    "expected": "The signed-in user's saved words, tasks, and challenges load from their account without exposing another user's data."
+  },
+  {
+    "name": "Complete a guided speaking challenge",
+    "viewport": "desktop",
+    "covers": [
+      "guided challenge prompt",
+      "challenge completion state",
+      "challenge progress tracking",
+      "navigation to voice studio"
+    ],
+    "description": "Verifies a learner can open a prompt, practise it, and mark the challenge complete.",
+    "steps": [
+      "Open Challenges",
+      "Open Introduce yourself",
+      "Open Voice studio, return to the challenge, and mark it complete"
+    ],
+    "expected": "The challenge is marked complete and the challenge count increases."
+  },
+  {
+    "name": "Enable daily reminder and practice on mobile",
+    "viewport": "mobile",
+    "covers": [
+      "notification permission",
+      "daily reminder settings",
+      "mobile voice and challenge layout",
+      "daily task progress and streak"
+    ],
+    "description": "Verifies reminder opt-in and practice interactions are usable on a narrow screen.",
+    "steps": [
+      "Set a reminder time and enable notifications",
+      "Complete a daily task",
+      "Open a speaking challenge and mark it complete"
+    ],
+    "expected": "The reminder setting is saved, progress updates, and controls remain usable without horizontal overflow."
+  },
+  {
+    "name": "Reject empty AI coaching input and invalid custom words",
+    "viewport": "desktop",
+    "covers": [
+      "AI input validation",
+      "custom word validation",
+      "user-visible error guardrails"
+    ],
+    "description": "Verifies empty requests and blank or duplicate words are rejected safely.",
+    "steps": [
+      "Request AI feedback without audio or transcript",
+      "Submit an empty custom word",
+      "Try to add an existing word again"
+    ],
+    "expected": "Clear validation messages appear and no empty or duplicate word is added."
+  }
+]
