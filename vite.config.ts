@@ -10,6 +10,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  envPrefix: ['VITE_', 'SUPABASE_'],
   base: './',
   build: {
     outDir: process.env.APPDEPLOY_VITE_OUT_DIR || 'dist',
