@@ -33,7 +33,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
         <div style={{ padding: 40, textAlign: 'center', fontFamily: 'sans-serif' }}>
           <h2>ClearVoice encountered an error</h2>
           <p>Please refresh the page. If the issue persists, check your internet connection and try again.</p>
-          <button onClick={() => window.location.reload()} style={{ padding: 10 20, cursor: 'pointer' }}>Refresh</button>
+          <button onClick={() => window.location.reload()} style={{ padding: '10px 20px', cursor: 'pointer' }}>Refresh</button>
         </div>
       );
     }
